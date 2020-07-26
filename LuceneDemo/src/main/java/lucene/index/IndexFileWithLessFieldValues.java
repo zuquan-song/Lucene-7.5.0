@@ -60,6 +60,7 @@ public class IndexFileWithLessFieldValues {
       doc.add(new Field("content", "a b", type));
       doc.add(new IntPoint("intPoitn", 3, 4, 6));
       indexWriter.addDocument(doc);
+      indexWriter.flush();
 
       // 文档1
       doc = new Document();
@@ -69,6 +70,7 @@ public class IndexFileWithLessFieldValues {
       doc.add(new NumericDocValuesField("sortByNumber", -1));
       doc.add(new IntPoint("intPoitn", 3, 5, 6));
       indexWriter.addDocument(doc);
+      indexWriter.flush();
 
       // 文档2
       doc = new Document();
@@ -76,90 +78,62 @@ public class IndexFileWithLessFieldValues {
       doc.add(new TextField("content", "a c b e", Field.Store.YES));
       doc.add(new NumericDocValuesField("sortByNumber", 4));
       indexWriter.addDocument(doc);
+      indexWriter.flush();
 
       // 文档3
       doc = new Document();
-      doc.add(new TextField("author", "aab aab aabb ", Field.Store.YES));
+      doc.add(new TextField("author", "aabb ", Field.Store.YES));
       doc.add(new TextField("content", "b c e", Field.Store.YES));
       doc.add(new NumericDocValuesField("sortByNumber", 1));
       indexWriter.addDocument(doc);
+      indexWriter.flush();
 
       // 文档4
       doc = new Document();
-      doc.add(new TextField("author", "aab aab aabb ", Field.Store.YES));
+      doc.add(new TextField("author", "aab", Field.Store.YES));
       doc.add(new TextField("content", "a c e f g d", Field.Store.YES));
       indexWriter.addDocument(doc);
+      indexWriter.flush();
 
-//      indexWriter.updateNumericDocValue(new Term("author", "a"), "sortByNumber", 99);
+      // 文档5
+      doc = new Document();
+      doc.add(new TextField("title", "aab", Field.Store.YES));
+      indexWriter.updateDocument(new Term("123", "luxugang"), doc);
+      indexWriter.flush();
 
-//      // 文档0
-//      Document doc = new Document();
-//      doc.add(new TextField("author", "aab b aab aabbcc ", Field.Store.YES));
-//      doc.add(new TextField("content", "a b", Field.Store.YES));
-//      indexWriter.addDocument(doc);
-//
-//      // 文档1
-//      doc = new Document();
-//      doc.add(new TextField("author", "cd a", Field.Store.YES));
-//      doc.add(new TextField("content", "a b c h", Field.Store.YES));
-//      doc.add(new TextField("title", "d a", Field.Store.YES));
-//      doc.add(new SortedSetDocValuesField("sortByString", new BytesRef("a"))); // MIN
-//      doc.add(new SortedSetDocValuesField("sortByString", new BytesRef("h"))); // MIDDLE_MAX
-//      doc.add(new SortedSetDocValuesField("sortByString", new BytesRef("f"))); // MIDDLE_MIN
-//      doc.add(new SortedSetDocValuesField("sortByString", new BytesRef("y"))); // MAX
-//      indexWriter.addDocument(doc);
-//
-//      // 文档2
-//      doc = new Document();
-//      doc.add(new TextField("author", "aab aab aabb ", Field.Store.YES));
-//      doc.add(new TextField("content", "a c b e", Field.Store.YES));
-//      doc.add(new SortedSetDocValuesField("sortByString", new BytesRef("c"))); // MIN
-//      doc.add(new SortedSetDocValuesField("sortByString", new BytesRef("i"))); // MIDDLE_MAX
-//      doc.add(new SortedSetDocValuesField("sortByString", new BytesRef("e"))); // MIDDLE_MIN
-//      doc.add(new SortedSetDocValuesField("sortByString", new BytesRef("z"))); // MAX
-//      indexWriter.addDocument(doc);
-//
-//      // 文档3
-//      doc = new Document();
-//      doc.add(new TextField("author", "aab aab aabb ", Field.Store.YES));
-//      doc.add(new TextField("content", "b c e", Field.Store.YES));
-//      doc.add(new SortedSetDocValuesField("sortByString", new BytesRef("b"))); // MIN
-//      doc.add(new SortedSetDocValuesField("sortByString", new BytesRef("j"))); // MIDDLE_MAX
-//      doc.add(new SortedSetDocValuesField("sortByString", new BytesRef("d"))); // MIDDLE_MIN
-//      doc.add(new SortedSetDocValuesField("sortByString", new BytesRef("x"))); // MAX
-//      indexWriter.addDocument(doc);
-//
-//      // 文档4
-//      doc = new Document();
-//      doc.add(new TextField("author", "aab aab aabb ", Field.Store.YES));
-//      doc.add(new TextField("content", "b c e d f w e", Field.Store.YES));
-//      indexWriter.addDocument(doc);
+      // 文档6
+      doc = new Document();
+      doc.add(new TextField("title", "aab", Field.Store.YES));
+      indexWriter.updateDocument(new Term("123", "luxugang"), doc);
+      indexWriter.flush();
+
+      // 文档7
+      doc = new Document();
+      doc.add(new TextField("title", "aab", Field.Store.YES));
+      indexWriter.updateDocument(new Term("123", "luxugang"), doc);
+      indexWriter.flush();
+
+      // 文档8
+      doc = new Document();
+      doc.add(new TextField("title", "aab", Field.Store.YES));
+      indexWriter.updateDocument(new Term("123", "luxugang"), doc);
+      indexWriter.flush();
+
     }
-    indexWriter.commit();
 //          indexWriter.updateNumericDocValue(new Term("author", "a"), "sortByNumber", 99);
-//    indexWriter.commit();
+    indexWriter.commit();
 
 
     // Per-top-reader state:
 
     BooleanQuery.Builder builder = new BooleanQuery.Builder();
-    builder.add(new TermQuery(new Term("content", "a")), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term("content", "b")), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term("content", "c")), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term("content", "h")), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term("content", "e")), BooleanClause.Occur.SHOULD);
-    builder.setMinimumNumberShouldMatch(2);
-
     DirectoryReader reader = DirectoryReader.open(indexWriter);
-    reader.maxDoc();
     IndexSearcher indexSearcher = new IndexSearcher(reader);
-    SortField searchSortField = new SortField("sortByNumber", SortField.Type.LONG);
-    Sort searchSort = new Sort(searchSortField);
+    builder = new BooleanQuery.Builder();
+    builder.add(new TermQuery(new Term("title", "aab")), BooleanClause.Occur.SHOULD);
 
-    TopFieldCollector collector = TopFieldCollector.create(searchSort, 2, true, false, false, false);
-    indexSearcher.search(builder.build(),  collector);
 
-//    TopFieldDocs fieldDocs = indexSearcher.search(new MatchAllDocsQuery(), 5, searchSort);
+   ScoreDoc doc[]  =  indexSearcher.search(builder.build() , 10).scoreDocs;
 
     System.out.printf("ha");
 
